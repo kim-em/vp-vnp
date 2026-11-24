@@ -1,12 +1,12 @@
 name: CI
 
-# `build` builds the project with Lake, fails on any `sorry` outside Challenge.lean, and checks
-# that the five theorems of Solution.lean use only propext, Classical.choice and Quot.sound.
-# It saves .lake/build to the Actions cache, and each `check` job restores it and checks the
-# proof with one independent kernel:
+# Builds the project with Lake, fails on any `sorry` outside Challenge.lean, checks that the five
+# theorems of Solution.lean use only propext, Classical.choice and Quot.sound, and then checks
+# the proof with independent kernels:
 #   con-leche  con-leche (master) --compare on lean4export files of Challenge and Solution
 #   con-ron    con-ron (master) --compare on the same export files
-#   nanoda     the nanoda_bin bundled with the toolchain, on an export of Solution
+#   nanoda     the nanoda_bin bundled with the toolchain, on the Solution export
+# .lake/build and the con-leche and con-ron binaries are kept in the Actions cache.
 
 on:
   push:
@@ -25,8 +25,8 @@ concurrency:
 env:
   ELAN_VERSION: v4.2.3
   ELAN_SHA256: df0b2b3a439961ffcbb3985214365ffe40f49bc871df04dff268c7d8e21ca8b2
-  # con-leche and con-ron master, for --compare. con-leche master can not read the v4.37 .olean
-  # format, so they read lean4export files written by the toolchain's `leanexport`.
+  # con-leche and con-ron master, for --compare. They can not read the v4.37 .olean format, so
+  # they read lean4export files written by the toolchain's `leanexport`.
   CON_LECHE_COMMIT: bc6676101c488e21ce71a317b33905534d497e14
   CON_RON_COMMIT: e772d54f0590d0fbb8fbcd7e400c75831de1f443
 
@@ -34,8 +34,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 60
-    outputs:
-      cache-key: ${{ steps.key.outputs.key }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -45,10 +43,10 @@ jobs:
       - name: Compute the build cache key
         id: key
         run: |
-          echo "key=lake-build-v1-${{ hashFiles('**/*.lean', 'lakefile.toml', 'lake-manifest.json', 'lean-toolchain') }}" >> "$GITHUB_OUTPUT"
+          echo "key=lake-build-v2-${{ hashFiles('**/*.lean', 'lakefile.toml', 'lake-manifest.json', 'lean-toolchain') }}" >> "$GITHUB_OUTPUT"
 
       - name: Install elan
-        run: &install-elan |
+        run: |
           curl --fail --location --proto '=https' --tlsv1.2 --output "$RUNNER_TEMP/elan.tar.gz" \
             "https://github.com/leanprover/elan/releases/download/${ELAN_VERSION}/elan-x86_64-unknown-linux-gnu.tar.gz"
           echo "${ELAN_SHA256}  $RUNNER_TEMP/elan.tar.gz" | sha256sum --check
@@ -66,7 +64,7 @@ jobs:
         with:
           path: .lake/build
           key: ${{ steps.key.outputs.key }}
-          restore-keys: lake-build-v1-
+          restore-keys: lake-build-v2-
 
       - name: lake build
         run: |
@@ -113,54 +111,15 @@ jobs:
             exit 1
           fi
 
-  check:
-    needs: build
-    runs-on: ubuntu-latest
-    timeout-minutes: 60
-    strategy:
-      fail-fast: false
-      matrix:
-        checker: [con-leche, con-ron, nanoda]
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-
-      # The two export files take about 12 GB.
-      - name: Free disk space
-        if: matrix.checker == 'con-leche' || matrix.checker == 'con-ron'
-        run: |
-          df -h / /mnt || true
-          sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc /usr/local/.ghcup \
-            /opt/hostedtoolcache/CodeQL /usr/share/swift /usr/local/share/boost || true
-          df -h / /mnt || true
-
-      - name: Install elan
-        run: *install-elan
-
-      - name: Fetch the Mathlib cache
-        run: lake exe cache get
-
-      - name: Restore the Lake build
-        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: .lake/build
-          key: ${{ needs.build.outputs.cache-key }}
-          fail-on-cache-miss: true
-
-      - name: Check that the build is up to date
-        run: lake build --no-build
-
-      - name: Restore the checker
-        id: tool
-        if: matrix.checker == 'con-leche' || matrix.checker == 'con-ron'
+      - name: Restore con-leche
+        id: con-leche
         uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/tools/bin
-          key: ${{ matrix.checker }}-${{ matrix.checker == 'con-leche' && env.CON_LECHE_COMMIT || env.CON_RON_COMMIT }}
+          key: con-leche-${{ env.CON_LECHE_COMMIT }}
 
       - name: Build con-leche
-        if: matrix.checker == 'con-leche' && steps.tool.outputs.cache-hit != 'true'
+        if: steps.con-leche.outputs.cache-hit != 'true'
         run: |
           git init -q ~/tools/con-leche
           cd ~/tools/con-leche
@@ -170,8 +129,22 @@ jobs:
           mkdir -p ~/tools/bin
           cp .lake/build/bin/con-leche ~/tools/bin/
 
+      - name: Save con-leche
+        if: steps.con-leche.outputs.cache-hit != 'true'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/tools/bin
+          key: con-leche-${{ env.CON_LECHE_COMMIT }}
+
+      - name: Restore con-ron
+        id: con-ron
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/tools/bin
+          key: con-ron-${{ env.CON_RON_COMMIT }}
+
       - name: Build con-ron
-        if: matrix.checker == 'con-ron' && steps.tool.outputs.cache-hit != 'true'
+        if: steps.con-ron.outputs.cache-hit != 'true'
         run: |
           git init -q ~/tools/con-ron
           cd ~/tools/con-ron
@@ -181,82 +154,46 @@ jobs:
           mkdir -p ~/tools/bin
           cp target/release/con-ron ~/tools/bin/
 
-      - name: Save the checker
-        if: (matrix.checker == 'con-leche' || matrix.checker == 'con-ron') && steps.tool.outputs.cache-hit != 'true'
+      - name: Save con-ron
+        if: steps.con-ron.outputs.cache-hit != 'true'
         uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/tools/bin
-          key: ${{ steps.tool.outputs.cache-primary-key }}
+          key: con-ron-${{ env.CON_RON_COMMIT }}
 
-      - name: Start a memory monitor
-        run: |
-          free -m
-          nohup bash -c 'while sleep 5; do echo "$(date +%T) $(free -m | awk "/^Mem/ {print \$3} /^Swap/ {print \$3}" | tr "\n" " ")"; done' \
-            > "$RUNNER_TEMP/mem.log" 2>&1 &
-
+      # As in leanprover/comparator, each export holds the theorems of comparator.json and
+      # everything they depend on (about 62000 declarations), rather than all of Mathlib.
       - name: Export Challenge and Solution
-        if: matrix.checker == 'con-leche' || matrix.checker == 'con-ron'
         run: |
           mkdir -p "$RUNNER_TEMP/export"
-          lake env leanexport Challenge > "$RUNNER_TEMP/export/Challenge.ndjson" &
-          challenge=$!
-          lake env leanexport Solution > "$RUNNER_TEMP/export/Solution.ndjson" &
-          solution=$!
-          status=0
-          wait "$challenge" || { echo "::error::exporting Challenge failed ($?)"; status=1; }
-          wait "$solution" || { echo "::error::exporting Solution failed ($?)"; status=1; }
+          mapfile -t theorems < <(jq -r '.theorem_names[]' comparator.json)
+          for m in Challenge Solution; do
+            lake env leanexport "$m" -- "${theorems[@]}" > "$RUNNER_TEMP/export/$m.ndjson"
+          done
           ls -l "$RUNNER_TEMP/export"
-          df -h "$RUNNER_TEMP"
-          exit "$status"
 
-      - name: ${{ matrix.checker }} --compare
-        if: matrix.checker == 'con-leche' || matrix.checker == 'con-ron'
-        run: |
-          ulimit -c 0
-          set +e
-          ~/tools/bin/${{ matrix.checker }} --jobs="$(nproc)" --compare -- \
-            "$RUNNER_TEMP/export/Challenge.ndjson" "$RUNNER_TEMP/export/Solution.ndjson" \
-            2>&1 | tee "$RUNNER_TEMP/check.log"
-          status="${PIPESTATUS[0]}"
-          set -e
-          rm -rf "$RUNNER_TEMP/export"
-          if [ "$status" -ne 0 ]; then
-            echo "::error::${{ matrix.checker }} exited with status $status"
-            exit 1
-          fi
-          grep -E ': accepted .* 5 axioms justified by the solution .*\(--verified\)$' "$RUNNER_TEMP/check.log"
-          grep -E ': theorem [^ ]+ justified by the solution$' "$RUNNER_TEMP/check.log" \
-            | sed -E 's/.*: theorem ([^ ]+) justified.*/\1/' | sort > "$RUNNER_TEMP/justified.txt"
-          printf '%s\n' Solution.mainTheorem Solution.mainTheoremApprox Solution.permanent_over_real \
-            Solution.separation Solution.separationClosure | sort > "$RUNNER_TEMP/expected.txt"
-          if ! diff "$RUNNER_TEMP/expected.txt" "$RUNNER_TEMP/justified.txt"; then
-            echo "::error::the justified theorems are not exactly the five of comparator.json"
-            exit 1
-          fi
+      - name: con-leche --compare
+        run: bash .github/scripts/compare.sh ~/tools/bin/con-leche "$RUNNER_TEMP/export"
 
-      - name: nanoda on an export of Solution
-        if: matrix.checker == 'nanoda'
+      - name: con-ron --compare
+        run: bash .github/scripts/compare.sh ~/tools/bin/con-ron "$RUNNER_TEMP/export"
+
+      # Lean.trustCompiler is permitted because core's `opaque Lean.reduceNat` mentions it, and
+      # nanoda_bin stops with "declaration not found in infer_const" when it meets that opaque
+      # without it. This does not weaken the check of the five theorems: their axioms are
+      # checked by PrintAxioms above and by both --compare runs, which allow only the three
+      # standard axioms.
+      - name: nanoda on the Solution export
         run: |
           cat > "$RUNNER_TEMP/nanoda.json" <<EOF
           {
-            "use_stdin": true,
+            "export_file_path": "$RUNNER_TEMP/export/Solution.ndjson",
             "num_threads": $(nproc),
-            "permitted_axioms": ["propext", "Classical.choice", "Quot.sound"],
+            "permitted_axioms": ["propext", "Classical.choice", "Quot.sound", "Lean.trustCompiler"],
             "unpermitted_axiom_hard_error": false,
             "nat_extension": true,
             "string_extension": true,
             "print_success_message": true
           }
           EOF
-          set +e
-          lake env leanexport Solution | lake env nanoda_bin "$RUNNER_TEMP/nanoda.json"
-          status=("${PIPESTATUS[@]}")
-          set -e
-          echo "leanexport exit ${status[0]}, nanoda_bin exit ${status[1]}"
-          [ "${status[0]}" -eq 0 ] && [ "${status[1]}" -eq 0 ]
-
-      - name: Memory use
-        if: always()
-        run: |
-          free -m
-          sort -k2 -n "$RUNNER_TEMP/mem.log" | tail -n 3 | sed 's/^/peak used MB, swap MB: /' || true
+          lake env nanoda_bin "$RUNNER_TEMP/nanoda.json"
