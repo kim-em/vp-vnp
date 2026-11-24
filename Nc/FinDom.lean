@@ -46,7 +46,7 @@ def fdWt (w : θ → F) : θ ⊕ D ⊕ ((Σ d, E d) × (Σ d, E d)) → F
   | Sum.inr (Sum.inl _) => 0
   | Sum.inr (Sum.inr (p, q)) => if p.1 = q.1 ∧ p ≠ q then 0 else 1
 
-omit [Fintype ι] [DecidableEq ι] [DecidableEq θ] in
+omit [DecidableEq θ] in
 theorem fdSum_eq (lits : θ → List ((ι ⊕ Σ d, E d) × Bool)) (w : θ → F) (x : ι → Bool) :
     fdSum lits w x = wideSum (fdLits lits) (fdWt w) x := by
   unfold fdSum wideSum
@@ -107,7 +107,7 @@ theorem fdSum_eq (lits : θ → List ((ι ⊕ Σ d, E d) × Bool)) (w : θ → F
     rw [h1, h2, mul_one, mul_one]
     rfl
 
-omit [Fintype ι] [DecidableEq ι] [DecidableEq θ] in
+omit [DecidableEq θ] in
 /-- Clauses whose product does not depend on the function. -/
 theorem fdSum_elim {θ' : Type*} [Fintype θ'] (lits : θ → List ((ι ⊕ Σ d, E d) × Bool)) (w : θ → F)
     (lits' : θ' → List ((ι ⊕ Σ d, E d) × Bool)) (w' : θ' → F) (x : ι → Bool) (c : F)

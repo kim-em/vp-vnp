@@ -46,7 +46,7 @@ theorem ordGE_one : OrdGE 0 (1 : E[T;T⁻¹]) := by
 
 /-- **The parts of a small error stay small** at points whose coordinates have no poles. -/
 theorem ordGE_line_coeff {σ : Type} {u : σ → E[T;T⁻¹]} (hu : ∀ i, OrdGE 0 (u i))
-    {r : MvPolynomial σ E[T;T⁻¹]} (hr : ∀ d, OrdGE 1 (MvPolynomial.coeff d r)) (i : ℕ) :
+    {r : MvPolynomial σ E[T;T⁻¹]} (hr : ∀ d, OrdGE 1 (r.coeff d)) (i : ℕ) :
     OrdGE 1 ((Nc.Acc.line u r).coeff i) := by
   classical
   have hpow : ∀ (l : σ) (k : ℕ), PolyOrdGE 0 ((Polynomial.C (u l) * Polynomial.X) ^ k) := by
@@ -78,13 +78,13 @@ theorem ordGE_codeB (N : ℕ) (w : List Bool) (q : Fin N × Option Bool) : OrdGE
 /-- **Paper: proof of Theorem thm:approx, the parts of an approximated polynomial approximate its value.** -/
 theorem ordGE_sum_coeff_sub {N d n : ℕ} {f : MvPolynomial (Fin N × Option Bool) E}
     {p : MvPolynomial (Fin N × Option Bool) E[T;T⁻¹]}
-    (hp : ∀ e (i : ℤ), i ≤ 0 → (MvPolynomial.coeff e p).coeff i = if i = 0 then MvPolynomial.coeff e f else 0)
+    (hp : ∀ e (i : ℤ), i ≤ 0 → (p.coeff e).coeff i = if i = 0 then f.coeff e else 0)
     (hd : f.totalDegree ≤ d) (hn : d < n) (w : List Bool) (a : A)
     (hval : MvPolynomial.eval (codeB E N w) f = algebraMap A E a) :
     OrdGE 1 (∑ i ∈ Finset.range n, (Nc.Acc.line (codeB E[T;T⁻¹] N w) p).coeff i - algebraMap A E[T;T⁻¹] a) := by
   classical
   obtain ⟨φ, hφ⟩ : ∃ φ, φ = algebraMap E E[T;T⁻¹] := ⟨_, rfl⟩
-  have hdiff : ∀ e, OrdGE 1 (MvPolynomial.coeff e (p - MvPolynomial.map φ f)) := by
+  have hdiff : ∀ e, OrdGE 1 ((p - MvPolynomial.map φ f).coeff e) := by
     intro e i hi
     rw [MvPolynomial.coeff_sub, MvPolynomial.coeff_map, AddMonoidAlgebra.coeff_sub, Finsupp.sub_apply, hp e i (by omega),
       hφ, coeff_algebraMap, Algebra.algebraMap_self_apply]

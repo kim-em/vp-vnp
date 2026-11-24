@@ -35,7 +35,7 @@ theorem prop_extend_product (π : L → I' → I) (θ : L → ℝ) (hθ : ∀ l,
   · rw [extendProduct, extendProduct, extendProduct, ← Finset.prod_mul_distrib]
     refine Finset.prod_congr rfl fun l _ => ?_
     rw [(def_spectral_congr φ).2 (tensor_push_mul _ s t), φ.mul, Real.mul_rpow (φ.nonneg _) (φ.nonneg _)]
-  · exact Finset.prod_le_prod (fun l _ => Real.rpow_nonneg (φ.nonneg _) _) fun l _ =>
+  · exact Finset.prod_le_prod₀ (fun l _ => Real.rpow_nonneg (φ.nonneg _) _) fun l _ =>
       Real.rpow_le_rpow (φ.nonneg _) ((def_spectral_congr φ).1 ((tensor_push_cover _).2 h)) (hθ l)
 
 /-- Proof of Proposition prop:extend: "Suppose that ιA = ∑ s_j, each s_j a restriction of b_j. As ιA has trivial index sets
@@ -77,7 +77,7 @@ theorem prop_extend_lower (ι : I → I') (π : L → I' → I) (hπ : ∀ l i, 
     exact (prop_extend_product π θ hθ φ).1 _
   · calc φ.F (a k) = φ.F (a k) ^ (∑ l, θ l) := by rw [hθ1, Real.rpow_one]
       _ = ∏ l, φ.F (a k) ^ θ l := Real.rpow_sum_of_pos h0 _ _
-      _ ≤ extendProduct π θ φ (b k) := Finset.prod_le_prod (fun l _ => Real.rpow_nonneg h0.le _) fun l _ =>
+      _ ≤ extendProduct π θ φ (b k) := Finset.prod_le_prod₀ (fun l _ => Real.rpow_nonneg h0.le _) fun l _ =>
         Real.rpow_le_rpow h0.le ((def_spectral_congr φ).1 (hr k _ (hπ l))) (hθ l)
 
 /-- Proof of Proposition prop:extend: "f(ιA) = φ(A), as π_l ι = id." -/

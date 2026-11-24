@@ -118,7 +118,7 @@ variable {F : Type*} [CommRing F] {X : Type*}
 
 /-- All coefficients of the polynomial u are Laurent series without terms below ε ^ n. -/
 def OrdGe (n : ℤ) (u : MvPolynomial X (LaurentSeries F)) : Prop :=
-  ∀ (d : X →₀ ℕ) (i : ℤ), i < n → (coeff d u).coeff i = 0
+  ∀ (d : X →₀ ℕ) (i : ℤ), i < n → (u.coeff d).coeff i = 0
 
 theorem OrdGe.mono {m n : ℤ} {u : MvPolynomial X (LaurentSeries F)} (h : OrdGe n u) (hmn : m ≤ n) : OrdGe m u :=
   fun d i hi => h d i (by omega)
@@ -126,7 +126,7 @@ theorem OrdGe.mono {m n : ℤ} {u : MvPolynomial X (LaurentSeries F)} (h : OrdGe
 theorem OrdGe.zero (n : ℤ) : OrdGe n (0 : MvPolynomial X (LaurentSeries F)) := fun d i _ => by simp
 
 theorem OrdGe.add {n : ℤ} {u v : MvPolynomial X (LaurentSeries F)} (hu : OrdGe n u) (hv : OrdGe n v) :
-    OrdGe n (u + v) := fun d i hi => by rw [coeff_add, HahnSeries.coeff_add, hu d i hi, hv d i hi, add_zero]
+    OrdGe n (u + v) := fun d i hi => by rw [AddMonoidAlgebra.coeff_add, Finsupp.add_apply, HahnSeries.coeff_add, hu d i hi, hv d i hi, add_zero]
 
 /-- The product of a series without terms below ε ^ m and one without terms below ε ^ n has none below ε ^ (m + n). -/
 theorem coeff_mul_eq_zero {m n : ℤ} {x y : LaurentSeries F} (hx : ∀ i < m, x.coeff i = 0)
@@ -240,16 +240,16 @@ by one whose constants are Laurent polynomials in ε: this circuit computes a po
 in which no negative power of ε occurs and in which the terms without ε are those of f. -/
 theorem Approximates.exists_laurentPolynomial {f : MvPolynomial X F} (h : Approximates f s) :
     ∃ p : MvPolynomial X (LaurentPolynomial F), Computes p s ∧
-      ∀ (d : X →₀ ℕ) (i : ℤ), i ≤ 0 → (coeff d p).coeff i = if i = 0 then coeff d f else 0 := by
+      ∀ (d : X →₀ ℕ) (i : ℤ), i ≤ 0 → (p.coeff d).coeff i = if i = 0 then f.coeff d else 0 := by
   obtain ⟨_, ⟨l, hl, k, hk, rfl⟩, hp⟩ := h
   obtain ⟨L, hL, hr⟩ := exists_truncated_steps hl 1
   obtain ⟨r, hr, e⟩ := hr k hk
   refine ⟨L k, ⟨L, hL, k, hk, rfl⟩, fun d i hi => ?_⟩
-  rw [← hp d i hi, ← coeff_laurentToSeries, ← coeff_map, e, coeff_add, HahnSeries.coeff_add, hr d i (by omega), add_zero]
+  rw [← hp d i hi, ← coeff_laurentToSeries, ← coeff_map, e, AddMonoidAlgebra.coeff_add, Finsupp.add_apply, HahnSeries.coeff_add, hr d i (by omega), add_zero]
 
 /-- Conversely, a circuit over the Laurent polynomials in ε is a circuit over the Laurent series. -/
 theorem Approximates.of_laurentPolynomial {f : MvPolynomial X F} {p : MvPolynomial X (LaurentPolynomial F)}
-    (hp : Computes p s) (h : ∀ (d : X →₀ ℕ) (i : ℤ), i ≤ 0 → (coeff d p).coeff i = if i = 0 then coeff d f else 0) :
+    (hp : Computes p s) (h : ∀ (d : X →₀ ℕ) (i : ℤ), i ≤ 0 → (p.coeff d).coeff i = if i = 0 then f.coeff d else 0) :
     Approximates f s :=
   ⟨map (laurentToSeries F) p, hp.map _, fun d i hi => by rw [coeff_map, coeff_laurentToSeries, h d i hi]⟩
 

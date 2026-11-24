@@ -34,7 +34,7 @@ theorem prop_crossing_cut {A : Type} [Fintype A] [DecidableEq A] (π : A → I) 
       (r : ℝ) ^ F.e o₁ o₂ := by
   refine (F.mono (lem_hubs π t S g h hg hh hs o₁ o₂)).trans ?_
   rw [F.mul, F.prod]
-  exact mul_le_mul (Finset.prod_le_prod (fun _ _ => F.nonneg _) fun a _ => F.wire_le _ _ _) (F.wire_le _ _ _)
+  exact mul_le_mul (Finset.prod_le_prod₀ (fun _ _ => F.nonneg _) fun a _ => F.wire_le _ _ _) (F.wire_le _ _ _)
     (F.nonneg _) (Finset.prod_nonneg fun _ _ => Real.rpow_nonneg (Nat.cast_nonneg _) _)
 
 variable {α β : Type} [Fintype α] [DecidableEq α] [Nonempty α] [Fintype β] [DecidableEq β]

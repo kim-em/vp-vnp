@@ -32,9 +32,6 @@ theorem kNew_eq (r : M.R) (ν : (M.kind r.1).CnAt r.2) : kNew o key r ν =
     ((List.finRange U1).filter fun k => k.1 < (o ⟨r.1, ν.1⟩).1 + 1).map fun k => key (M.rp r, .new ⟨r.1, ν.1⟩ k) := by
   unfold kNew
   congr 1
-  refine List.filter_congr fun k _ => ?_
-  rw [decide_eq_decide, Nat.lt_succ_iff]
-  rfl
 
 theorem length_kNew (r : M.R) (ν : (M.kind r.1).CnAt r.2) : (kNew o key r ν).length = (o ⟨r.1, ν.1⟩).1 + 1 := by
   rw [kNew_eq, List.length_map, filter_finRange (by have := (o ⟨r.1, ν.1⟩).2; omega), List.length_ofFn]

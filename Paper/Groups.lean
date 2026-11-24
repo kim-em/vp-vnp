@@ -192,7 +192,7 @@ theorem kappa_small {μ : ℕ} {s : ℝ} (hμ : 2 ≤ μ) (hs : 1 ≤ s) (hsm : 
   have hni : n ≤ 2 ^ i := Nat.le_pow_clog one_lt_two n
   have hi2 : 2 ^ i ≤ 2 * n := by
     obtain ⟨j, hj⟩ : ∃ j, i = j + 1 := ⟨i - 1, by have := Nat.clog_pos one_lt_two (show 2 ≤ n by omega); omega⟩
-    have h : 2 ^ i.pred < n := Nat.pow_pred_clog_lt_self one_lt_two (by omega)
+    have h : 2 ^ i.pred < n := Nat.pow_pred_clog_lt_self 2 (by omega)
     rw [hj, Nat.pred_succ] at h
     rw [hj, pow_succ]
     omega

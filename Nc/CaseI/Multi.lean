@@ -60,7 +60,7 @@ theorem cf_congr {S : Finset (Fin k)} (P : MvPolynomial (Fin k × T) F) {x y : F
   rw [cf, cf, mono_congr h]
 
 theorem cf_add (S : Finset (Fin k)) (P Q : MvPolynomial (Fin k × T) F) (x : Fin k → T) :
-    cf S (P + Q) x = cf S P x + cf S Q x := coeff_add _ _ _
+    cf S (P + Q) x = cf S P x + cf S Q x := rfl
 
 theorem cf_mul (S : Finset (Fin k)) (P Q : MvPolynomial (Fin k × T) F) (x : Fin k → T) :
     cf S (P * Q) x = ∑ A ∈ S.powerset, cf A P x * cf (S \ A) Q x := by

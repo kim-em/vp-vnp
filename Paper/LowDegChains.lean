@@ -82,7 +82,7 @@ theorem lem_lowdeg_chains [Fintype σ] (l : ℕ → MvPolynomial σ F) (hl : ∀
         · obtain ⟨κa, la, Ha⟩ := ih i hi (hi.trans hn)
           obtain ⟨κb, lb, Hb⟩ := ih j hj (hj.trans hn)
           refine ⟨κa + κb, la + lb, fun u m => ?_⟩
-          rw [e, map_add, Polynomial.coeff_add, Ha, Hb]
+          rw [e, map_add (line u), Polynomial.coeff_add, Ha, Hb]
           simp only [Pi.add_apply, add_mul, Finset.sum_add_distrib]
           by_cases hm : m = 0
           · simp only [hm, if_true]; ring

@@ -25,7 +25,7 @@ variable {F X : Type*} [Field F]
 `f + ε * g`, every coefficient of `g` being a power series. -/
 def Approximates (f : MvPolynomial X F) (s : ℕ) : Prop :=
   ∃ p : MvPolynomial X (LaurentSeries F), Computes p s ∧
-    ∀ (d : X →₀ ℕ) (i : ℤ), i ≤ 0 → (coeff d p).coeff i = if i = 0 then coeff d f else 0
+    ∀ (d : X →₀ ℕ) (i : ℤ), i ≤ 0 → (p.coeff d).coeff i = if i = 0 then f.coeff d else 0
 
 end Approx
 

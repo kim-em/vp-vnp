@@ -27,7 +27,7 @@ is f + εg with all coefficients of g in k[[ε]]. The closure of VP is defined l
 Coefficientwise: no negative powers of ε, and the part of ε⁰ is f. -/
 theorem def_approx {F : Type u} {X : Type*} [Field F] (f : MvPolynomial X F) (s : ℕ) :
     Approximates f s ↔ ∃ p : MvPolynomial X (LaurentSeries F), Computes p s ∧
-      ∀ d : X →₀ ℕ, (∀ i : ℤ, i < 0 → (coeff d p).coeff i = 0) ∧ (coeff d p).coeff 0 = coeff d f := by
+      ∀ d : X →₀ ℕ, (∀ i : ℤ, i < 0 → (p.coeff d).coeff i = 0) ∧ (p.coeff d).coeff 0 = f.coeff d := by
   constructor
   · rintro ⟨p, hp, h⟩
     exact ⟨p, hp, fun d => ⟨fun i hi => by rw [h d i hi.le, if_neg hi.ne], by rw [h d 0 le_rfl, if_pos rfl]⟩⟩
@@ -52,7 +52,7 @@ theorem coeff_mul_T {R : Type} [CommRing R] (f : LaurentPolynomial R) (N i : ℤ
 theorem coeff_toLaurent_natCast {R : Type} [CommRing R] (f : Polynomial R) (i : ℕ) :
     (Polynomial.toLaurent f).coeff (i : ℤ) = f.coeff i := by
   rw [LaurentPolynomial.coeff_toLaurent]
-  exact Finsupp.mapDomain_apply Nat.castEmbedding.injective _ i
+  exact Finsupp.mapDomain_apply_of_injective Nat.castEmbedding.injective _ i
 
 open Ten in
 /-- **Paper: Lemma lem:few-approx.** "The lemma on sums with few terms remains true if f_j has coefficients in
@@ -220,7 +220,7 @@ theorem flat_rate_approximating {K : Type} [Field K] (hK : Flat K) {k : ℕ} (hk
       ∑ j, ∑ y : ∀ p, (T j).ι p, (∏ p, M j p (x p) (y p)) * HahnSeries.C ((T j).val y) := hM x
   rw [e, ← coeff_laurentToSeries]
   refine Eq.trans ?_ (hQf (mono univ (tables fun a => x (π a) ⟨a, rfl⟩)) i hi)
-  rw [show coeff (mono univ (tables fun a => x (π a) ⟨a, rfl⟩)) Q = cf univ Q (tables fun a => x (π a) ⟨a, rfl⟩) from rfl,
+  rw [show Q.coeff (mono univ (tables fun a => x (π a) ⟨a, rfl⟩)) = cf univ Q (tables fun a => x (π a) ⟨a, rfl⟩) from rfl,
     hx]
   simp only [map_sum, HahnSeries.coeff_sum]
   exact Finset.sum_congr rfl fun j _ => Finset.sum_congr rfl fun y _ => hterm j y
@@ -250,7 +250,7 @@ theorem contracting_approx_rate {K : Type} [Field K] (hK : Contracting K)
 theorem approx_rate_closed {K : Type} [Field K] {G : ∀ S, MvPolynomial (Fin S × Fin S) K} {κ : ℕ}
     (hG : GridComplete K G κ) :
     ∃ m₀ : ℕ, ∀ m ≥ m₀, ∀ s, ∀ P : MvPolynomial (Fin m × Fin m) (LaurentPolynomial K), Computes P s →
-      (∀ d, (∀ i : ℤ, i < 0 → (coeff d P).coeff i = 0) ∧ (coeff d P).coeff 0 = coeff d (G m)) →
+      (∀ d, (∀ i : ℤ, i < 0 → (P.coeff d).coeff i = 0) ∧ (P.coeff d).coeff 0 = (G m).coeff d) →
       (2 : ℝ) ^ (Real.logb 2 m ^ (4 / 3 : ℝ) / 1600 ^ 2) < s := by
   obtain ⟨m₀, h⟩ : ∃ m₀ : ℕ, ∀ m ≥ m₀, ∀ s, Approximates (G m) s →
       (2 : ℝ) ^ (Real.logb 2 m ^ (4 / 3 : ℝ) / 1600 ^ 2) < s := by
@@ -277,7 +277,7 @@ theorem thm_approx :
     obtain ⟨K, _, _, _⟩ := exists_closed p hp
     obtain ⟨M₁, h1⟩ := approx_rate_closed (gridComplete_hc K)
     obtain ⟨M₂, h2⟩ : ∃ M₂ : ℕ, p ≠ 2 → ∀ m ≥ M₂, ∀ s, ∀ P : MvPolynomial (Fin m × Fin m) (LaurentPolynomial K),
-        Computes P s → (∀ d, (∀ i : ℤ, i < 0 → (coeff d P).coeff i = 0) ∧ (coeff d P).coeff 0 = coeff d (genPerm K m)) →
+        Computes P s → (∀ d, (∀ i : ℤ, i < 0 → (P.coeff d).coeff i = 0) ∧ (P.coeff d).coeff 0 = (genPerm K m).coeff d) →
         (2 : ℝ) ^ (Real.logb 2 m ^ (4 / 3 : ℝ) / 1600 ^ 2) < s := by
       by_cases hne : p = 2
       · exact ⟨0, fun h => absurd hne h⟩

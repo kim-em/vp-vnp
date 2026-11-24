@@ -158,8 +158,9 @@ theorem sum_row_false (h : R) (σ ρ : Equiv.Perm N) (W : N → Bool → Bool �
   simp only [gridMatrix, map_add, add_mul, Finset.sum_add_distrib, sum_ind]
 
 theorem gridMatrix_permanent_aux (h : R) (hh : h * 2 = 1) (σ ρ : Equiv.Perm N) (W : N → Bool → Bool → R) :
-    (gridMatrix h σ ρ W).permanent = coeff (ones (N × Option Bool))
-      (∏ n, ∑ a, MvPolynomial.C (wt ρ W n a) * ∏ j, (X (slot σ ρ n a j) : MvPolynomial (N × Option Bool) R)) := by
+    (gridMatrix h σ ρ W).permanent = 
+      (∏ n, ∑ a, MvPolynomial.C (wt ρ W n a) * ∏ j, (X (slot σ ρ n a j) : MvPolynomial (N × Option Bool) R)).coeff
+        (ones (N × Option Bool)) := by
   rw [permanent_eq_coeff]
   apply coeff_ones_congr
   rw [Fintype.prod_prod_type, map_prod, map_prod]

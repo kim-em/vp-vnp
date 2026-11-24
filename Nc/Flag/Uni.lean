@@ -62,7 +62,7 @@ def wi : Matrix (Fin h) (Fin n) F2 := Matrix.of fun i a => if i = we hp a then 1
 
 theorem wi_t_mul : (wi hp)ᵀ * wi hp = 1 := by
   ext a b
-  simp [Matrix.mul_apply, wi, Matrix.one_apply, we_inj, eq_comm]
+  simp [Matrix.mul_apply, wi, Matrix.one_apply, we_inj, eq_comm, Function.swap]
 
 theorem wi_mul_apply (A : Matrix (Fin n) (Fin n) F2) (i j : Fin h) :
     (wi hp * A * (wi hp)ᵀ) i j =

@@ -103,8 +103,8 @@ theorem len_q (X V Y U m m' k k' : ℤ × ℤ) (τ : ℝ) (hτ : 0 < τ) :
         + τ • (df W X V * df W X V + df W Y U * df W Y U)
         + (1 / (2 * τ)) • (df W m m' * df W m m' + df W k k' * df W k k')) := by
     apply mean_le
-    · repeat' first | exact hb _ _ | apply Bd.smul | apply Bd.add | apply Bd.mul
-    · repeat' first | exact hb _ _ | apply Bd.smul | apply Bd.add | apply Bd.mul
+    · repeat' first | with_reducible exact hb _ _ | with_reducible apply Bd.smul | with_reducible apply Bd.add | with_reducible apply Bd.mul
+    · repeat' first | with_reducible exact hb _ _ | with_reducible apply Bd.smul | with_reducible apply Bd.add | with_reducible apply Bd.mul
     intro n b i j
     simp only [Pi.add_apply, Pi.mul_apply, Pi.smul_apply, smul_eq_mul]
     have h := H.q n b ((i, j) + X) ((i, j) + V) ((i, j) + Y) ((i, j) + U) ((i, j) + m)
@@ -117,7 +117,7 @@ theorem len_q (X V Y U m m' k k' : ℤ × ℤ) (τ : ℝ) (hτ : 0 < τ) :
   have e1 : mean ((2 : ℝ) • (df W X V * df W X V + df W Y U * df W Y U)) =
       2 * (len W (X - V) ^ 2 + len W (Y - U) ^ 2) := by
     rw [mean_smul, mean_add, ← nm_sq (hb _ _), ← nm_sq (hb _ _), H.nm_df, H.nm_df]
-    all_goals repeat' first | exact hb _ _ | apply Bd.smul | apply Bd.add | apply Bd.mul
+    all_goals repeat' first | with_reducible exact hb _ _ | with_reducible apply Bd.smul | with_reducible apply Bd.add | with_reducible apply Bd.mul
   rw [e1] at key
   have e2 : mean (df W X V * df W X m + df W X V * df W V m' + df W X V * df W X k
         + df W X V * df W V k' + (df W Y U * df W Y m + df W Y U * df W U m'
@@ -132,7 +132,7 @@ theorem len_q (X V Y U m m' k k' : ℤ × ℤ) (τ : ℝ) (hτ : 0 < τ) :
     rw [mean_add, mean_add, mean_add, mean_add, mean_add, mean_add, mean_add, mean_add,
       mean_add, mean_smul, mean_smul, mean_add, mean_add, ← nm_sq (hb _ _), ← nm_sq (hb _ _),
       ← nm_sq (hb _ _), ← nm_sq (hb _ _), H.nm_df, H.nm_df, H.nm_df, H.nm_df]
-    all_goals repeat' first | exact hb _ _ | apply Bd.smul | apply Bd.add | apply Bd.mul
+    all_goals repeat' first | with_reducible exact hb _ _ | with_reducible apply Bd.smul | with_reducible apply Bd.add | with_reducible apply Bd.mul
   rw [e2] at key
   have cs : ∀ a b c d : ℤ × ℤ, mean (df W a b * df W c d) ≤ len W (a - b) * len W (c - d) := by
     intro a b c d

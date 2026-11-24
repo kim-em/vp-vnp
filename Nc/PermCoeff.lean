@@ -60,7 +60,7 @@ variable {N J κ : Type*} [Fintype N] [Fintype J] [Fintype κ] [DecidableEq N]
 open scoped Classical in
 /-- Expanding a product of sums of terms and taking the coefficient of the product of all variables. -/
 theorem coeff_ones_prod (w : N → κ → R) (g : N → κ → J → C) :
-    coeff (ones C) (∏ i, ∑ a, MvPolynomial.C (w i a) * ∏ j, (X (g i a j) : MvPolynomial C R)) =
+    (∏ i, ∑ a, MvPolynomial.C (w i a) * ∏ j, (X (g i a j) : MvPolynomial C R)).coeff (ones C) =
       ∑ f : N → κ, if Function.Bijective (fun p : N × J => g p.1 (f p.1) p.2) then ∏ i, w i (f i)
         else 0 := by
   classical
@@ -94,7 +94,7 @@ theorem sum_perm_eq [DecidableEq C] (w : C → C → R) :
 
 /-- The permanent is a coefficient. -/
 theorem permanent_eq_coeff [DecidableEq C] (M : Matrix C C R) :
-    M.permanent = coeff (ones C) (∏ i, ∑ j, MvPolynomial.C (M i j) * (X j : MvPolynomial C R)) := by
+    M.permanent = (∏ i, ∑ j, MvPolynomial.C (M i j) * (X j : MvPolynomial C R)).coeff (ones C) := by
   classical
   have h := coeff_ones_prod (N := C) (J := Unit) (κ := C) (C := C) (fun i j => M i j) (fun _ a _ => a)
   have h2 : M.permanent = ∑ σ : Equiv.Perm C, ∏ i, M i (σ i) := by
@@ -119,7 +119,7 @@ variable (C R) in
 /-- The ideal of the squares of the variables. -/
 noncomputable def sqIdeal : Ideal (MvPolynomial C R) := Ideal.span (Set.range fun c => X c * X c)
 
-theorem coeff_ones_of_mem {p : MvPolynomial C R} (h : p ∈ sqIdeal R C) : coeff (ones C) p = 0 := by
+theorem coeff_ones_of_mem {p : MvPolynomial C R} (h : p ∈ sqIdeal R C) : p.coeff (ones C) = 0 := by
   classical
   obtain ⟨c, rfl⟩ := Ideal.mem_span_range_iff_exists_fun.1 h
   rw [coeff_sum]
@@ -129,9 +129,9 @@ theorem coeff_ones_of_mem {p : MvPolynomial C R} (h : p ∈ sqIdeal R C) : coeff
 
 theorem coeff_ones_congr {p q : MvPolynomial C R}
     (h : Ideal.Quotient.mk (sqIdeal R C) p = Ideal.Quotient.mk (sqIdeal R C) q) :
-    coeff (ones C) p = coeff (ones C) q := by
+    p.coeff (ones C) = q.coeff (ones C) := by
   have := coeff_ones_of_mem (Ideal.Quotient.eq.1 h)
-  rwa [coeff_sub, sub_eq_zero] at this
+  rwa [AddMonoidAlgebra.coeff_sub, Finsupp.sub_apply, sub_eq_zero] at this
 
 omit [Fintype C] in
 theorem mk_X_sq (c : C) : Ideal.Quotient.mk (sqIdeal R C) (X c) ^ 2 = 0 := by

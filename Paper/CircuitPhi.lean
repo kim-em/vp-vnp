@@ -73,7 +73,7 @@ theorem lem_circuit_value (mu : Letter S (Fin n) Γ → Matrix Q Q F) (i e : Q) 
     refine Eq.trans (b := (∏ τ, mu (gEm g τ) (gSt g (Fin.castSucc τ)) (gSt g (Fin.succ τ))) *
       if Good i e (code N u) (gEm g) (gSt g) (gPl g) (gCt g) then 1 else 0) ?_ (by simp)
     refine congrArg₂ (· * ·) ?_ ?_
-    · exact h1
+    · convert h1 <;> rfl
     · refine Eq.trans ?_ h2
       refine Finset.prod_congr rfl fun r _ => ?_
       by_cases hr : ∀ l ∈ hLits i e r, Sum.elim (code N u) (hot g) l.1 = l.2
@@ -136,7 +136,6 @@ theorem clauseSum_inputs {F : Type} [Field F] [Fintype ι] [DecidableEq ι] [Fin
   · have e : (Equiv.sumArrowEquivProdArrow ι α Bool).symm (x, a) = Sum.elim x a := rfl
     simp only [withInputs, inputWeights, Sum.elim_inl, e]
     rw [apply_ite (C : F → MvPolynomial ι F), map_one]
-    split_ifs <;> rfl
   · cases hx : x b <;> simp [withInputs, inputWeights, hx]
 
 end Inputs
@@ -284,7 +283,7 @@ theorem lem_circuit_phi (mu : Letter S Unit Γ → Matrix Q Q F) (i e : Q) (t N 
     rw [hphi]
     have hcode : code N (fun _ : Fin 1 => u) = code1 N u := by
       funext b
-      simp [code, code1, wordOf]
+      simp [Nc.code, code1, wordOf]
     have hval : f (code1 N u) = runVal mu i e t fun _ => u := by
       rw [hv, if_pos (vOk_code1 u hu), ← hcode, lem_circuit_value mu' i e (fun _ => u) (by omega)
         (by rw [length_wordOf_ofFn]; simpa using hu)]

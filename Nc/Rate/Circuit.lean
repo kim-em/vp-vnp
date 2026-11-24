@@ -34,20 +34,20 @@ theorem Approximates.aeval {f : MvPolynomial X F} {s : ℕ} (h : Approximates f 
       have h1 := hpf b 0 le_rfl
       rw [h0, if_pos rfl] at h1
       exact hb (h1.symm.trans (by simp))
-    have e1 : coeff d (MvPolynomial.aeval (fun q => MvPolynomial.map (HahnSeries.C : F →+* LaurentSeries F) (M q)) p) =
-        ∑ b ∈ p.support, coeff b p * HahnSeries.C (coeff d (MvPolynomial.aeval M (monomial b (1 : F)))) := by
+    have e1 : (MvPolynomial.aeval (fun q => MvPolynomial.map (HahnSeries.C : F →+* LaurentSeries F) (M q)) p).coeff d =
+        ∑ b ∈ p.support, p.coeff b * HahnSeries.C ((MvPolynomial.aeval M (monomial b (1 : F))).coeff d) := by
       conv_lhs => rw [p.as_sum, map_sum, coeff_sum]
       refine Finset.sum_congr rfl fun b _ => ?_
-      rw [← mul_one (coeff b p), ← C_mul_monomial, map_mul, aeval_C, MvPolynomial.algebraMap_eq, coeff_C_mul, mul_one]
+      rw [← mul_one (p.coeff b), ← C_mul_monomial, map_mul, aeval_C, MvPolynomial.algebraMap_eq, coeff_C_mul, mul_one]
       congr 1
       rw [← coeff_map, aeval_monomial, aeval_monomial, map_one, map_one, one_mul, one_mul, map_finsuppProd]
       simp only [map_pow]
-    have e2 : coeff d (MvPolynomial.aeval M f) =
-        ∑ b ∈ p.support, coeff b f * coeff d (MvPolynomial.aeval M (monomial b (1 : F))) := by
+    have e2 : (MvPolynomial.aeval M f).coeff d =
+        ∑ b ∈ p.support, f.coeff b * (MvPolynomial.aeval M (monomial b (1 : F))).coeff d := by
       conv_lhs => rw [f.as_sum, map_sum, coeff_sum]
-      rw [Finset.sum_subset hsub (fun b _ hb => by rw [notMem_support_iff.1 hb, monomial_zero, map_zero, coeff_zero])]
+      rw [Finset.sum_subset hsub (fun b _ hb => by rw [notMem_support_iff.1 hb, monomial_zero, map_zero, AddMonoidAlgebra.coeff_zero, Finsupp.coe_zero, Pi.zero_apply])]
       refine Finset.sum_congr rfl fun b _ => ?_
-      rw [← mul_one (coeff b f), ← C_mul_monomial, map_mul, aeval_C, MvPolynomial.algebraMap_eq, coeff_C_mul, mul_one]
+      rw [← mul_one (f.coeff b), ← C_mul_monomial, map_mul, aeval_C, MvPolynomial.algebraMap_eq, coeff_C_mul, mul_one]
     have e3 : ∀ (a : LaurentSeries F) (r : F), (a * HahnSeries.C r).coeff i = a.coeff i * r := by
       intro a r
       rw [mul_comm, HahnSeries.C_mul_eq_smul, HahnSeries.coeff_smul, smul_eq_mul, mul_comm]

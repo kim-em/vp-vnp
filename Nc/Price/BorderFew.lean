@@ -99,7 +99,7 @@ theorem le_type_bound (F : Spec K I) [Nonempty A] (π : A → I) (t : Ten K I)
       · have := ht q fun ⟨a, ha⟩ => hq ⟨a, ha⟩
         exact Subsingleton.elim _ _
   refine (le_coeff F (s := (Ten.kpow t N).withVal v) (D := E) Φ fun x =>
-    (hv x).trans (congr_arg (fun P => Polynomial.coeff P E) (key x))).trans (le_of_eq ?_)
+    (hv x).trans (congr_arg (fun (P : Polynomial _) => P.coeff E) (key x))).trans (le_of_eq ?_)
   rw [F.mul, F.prod, F.unit_eq π hr]
   rfl
 
@@ -150,7 +150,7 @@ theorem pow_le_few (F : Spec K I) [Nonempty A] [Nonempty κ] (π : A → I) (t :
     refine ((coeff_sum_words hL₁ N x le_rfl).trans (if_pos rfl)).symm.trans ?_
     show _ = ∑ τ, (∑ w : {w : Fin N → κ // wordType w = τ}, G w x).coeff (N * D)
     rw [← Polynomial.finsetSum_coeff]
-    exact congr_arg (fun P => Polynomial.coeff P _)
+    exact congr_arg (fun (P : Polynomial _) => P.coeff _)
       (Fintype.sum_fiberwise (wordType (N := N) (κ := κ)) fun w => G w x).symm
   rw [← F.kpow]
   refine (F.le_sum_val _ v hsum).trans ?_
@@ -158,7 +158,7 @@ theorem pow_le_few (F : Spec K I) [Nonempty A] [Nonempty κ] (π : A → I) (t :
     (le_of_eq ?_)
   · rcases isEmpty_or_nonempty {w : Fin N → κ // wordType w = τ} with he | ⟨⟨w₀, hw₀⟩⟩
     · have h0 : ∀ x, v τ x = 0 := fun x => by
-        show Polynomial.coeff (∑ w : {w : Fin N → κ // wordType w = τ}, G w x) (N * D) = 0
+        show (∑ w : {w : Fin N → κ // wordType w = τ}, G w x).coeff (N * D) = 0
         rw [Finset.univ_eq_empty, Finset.sum_empty, coeff_zero]
       rw [F.zero h0]
       positivity
@@ -171,7 +171,7 @@ theorem pow_le_few (F : Spec K I) [Nonempty A] [Nonempty κ] (π : A → I) (t :
     have hv : ∀ x, v τ x =
         (∑ m, ∏ j, polyApp (b (w₀ j)) (L₁ (w₀ j)) fun p => x p ((σ m).symm j)).coeff (N * D) := by
       intro x
-      refine congr_arg (fun P => Polynomial.coeff P _) (Fintype.sum_equiv num _ _ fun w => ?_)
+      refine congr_arg (fun (P : Polynomial _) => P.coeff _) (Fintype.sum_equiv num _ _ fun w => ?_)
       refine Fintype.prod_equiv (σ (num w)) _ _ fun i => ?_
       have := congr_fun (hσ (num w)) i
       simp only [Function.comp_apply, Equiv.symm_apply_apply] at this ⊢
@@ -184,7 +184,7 @@ theorem pow_le_few (F : Spec K I) [Nonempty A] [Nonempty κ] (π : A → I) (t :
     refine mul_le_mul (Real.rpow_le_rpow (by positivity) ?_ (few_hexp_nonneg F π)) ?_
       (Finset.prod_nonneg fun _ _ => F.nonneg _) (by positivity)
     · exact_mod_cast (Fintype.card_subtype_le _).trans_eq (by simp)
-    · exact (Finset.prod_le_prod (fun _ _ => F.nonneg _) fun j _ => hM _).trans (by simp)
+    · exact (Finset.prod_le_prod₀ (fun _ _ => F.nonneg _) fun j _ => hM _).trans (by simp)
   · rw [nsmul_eq_mul, Finset.card_univ, Fintype.card_fun, Fintype.card_fin]
     push_cast
     ring

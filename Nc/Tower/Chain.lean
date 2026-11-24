@@ -37,7 +37,7 @@ theorem exists_chain (h n : ℕ) [NeZero h] : ∃ Γ : ℕ → Subgroup (G h n),
   have step : ∀ j, ∀ H : Subgroup (Ker h n), Nat.card H = 2 ^ (ee h * j) → j < JJ h n →
       ∃ H' : Subgroup (Ker h n), Nat.card H' = 2 ^ (ee h * (j + 1)) ∧ H ≤ H' := by
     intro j H hH hj
-    refine Sylow.exists_subgroup_card_pow_prime_le 2 ?_ H hH (Nat.mul_le_mul_left _ (Nat.le_succ j))
+    refine Sylow.exists_subgroup_card_pow_prime_ge 2 ?_ H hH (Nat.mul_le_mul_left _ (Nat.le_succ j))
     rw [(Paper.prop_tower_kernel h n).2]
     refine pow_dvd_pow 2 ?_
     calc ee h * (j + 1) ≤ ee h * JJ h n := Nat.mul_le_mul_left _ hj

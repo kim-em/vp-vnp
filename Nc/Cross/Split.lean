@@ -101,7 +101,7 @@ theorem det_expand (P : n → (n ⊕ m) → R) (l : m → R) (v e : m → (n ⊕
     (of (Sum.elim P (fun r => l r • v r + e r)) : Matrix (n ⊕ m) (n ⊕ m) R).det =
       ∑ T : Finset m, (∏ r ∈ T, l r) *
         (of (Sum.elim P (T.piecewise v e)) : Matrix (n ⊕ m) (n ⊕ m) R).det := by
-  let g : MultilinearMap R (fun _ : m => (n ⊕ m) → R) R :=
+  let g : MultilinearMap (RingHom.id R) (fun _ : m => (n ⊕ m) → R) R :=
     (MultilinearMap.currySum (detRowAlternating (n := n ⊕ m) (R := R)).toMultilinearMap) P
   have hg : ∀ w : m → (n ⊕ m) → R, g w = (of (Sum.elim P w) : Matrix (n ⊕ m) (n ⊕ m) R).det := by
     intro w
@@ -112,6 +112,7 @@ theorem det_expand (P : n → (n ⊕ m) → R) (l : m → R) (v e : m → (n ⊕
     intro T
     have := g.map_piecewise_smul l (T.piecewise v e) T
     rw [smul_eq_mul] at this
+    simp only [RingHom.id_apply] at this
     rw [← this]
     congr 1
     ext r : 1

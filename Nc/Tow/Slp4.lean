@@ -68,6 +68,7 @@ def SeenU (n : Fin AA → Fin AA → Fin (U0 + 1)) (o : (sys R FL Pl).N → Fin 
   | .init a c k => k.1 < (n a c).1
   | .new ν k => k.1 ≤ (o ν).1
 
+set_option synthInstance.maxHeartbeats 200000 in
 theorem mem_cur (u : Un R FL Pl U0 U1) :
     u ∈ (plan R FL Pl lhat U0 U1).cur n o (Fintype.card (Mv T R ch FL)) ↔
       SeenU n o u ∧ ¬ ∃ z : ZM R FL (ch := ch), u ∈ consM R FL Pl lhat n o z := by

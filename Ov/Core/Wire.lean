@@ -69,7 +69,7 @@ theorem push_le_move (π π' : J → I) (t : Ten K J) :
   refine (F.le_mul (Restr.move π π' t)).trans ?_
   refine mul_le_mul_of_nonneg_right ?_ (F.nonneg _)
   rw [F.prod]
-  exact Finset.prod_le_prod (fun _ _ => F.nonneg _) fun j _ => F.wire_le _ _ _
+  exact Finset.prod_le_prod₀ (fun _ _ => F.nonneg _) fun j _ => F.wire_le _ _ _
 
 /-- The distances of a pull-back. -/
 theorem pull_e (π : J → I) (p q : J) : (F.pull π).e p q = F.e (π p) (π q) := by

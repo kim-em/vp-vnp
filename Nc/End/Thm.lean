@@ -107,7 +107,7 @@ theorem totalDegree_aeval_le {K : Type*} [Field K] {σ τ : Type*} (p : MvPolyno
   rw [aeval_def, eval₂_eq]
   refine totalDegree_finsetSum_le fun d hd => ?_
   refine (totalDegree_mul _ _).trans ?_
-  have h0 : (algebraMap K (MvPolynomial τ K) (coeff d p)).totalDegree = 0 := totalDegree_C _
+  have h0 : (algebraMap K (MvPolynomial τ K) (p.coeff d)).totalDegree = 0 := totalDegree_C _
   rw [h0, zero_add]
   refine (totalDegree_finsetProd _ _).trans ?_
   have h1 : ∀ i ∈ d.support, (f i ^ d i).totalDegree ≤ d i := fun i _ => by

@@ -67,7 +67,7 @@ theorem lem_count_sets (E : ℕ) {t : ℝ} (h0 : 0 < t) (h1 : t < 1) :
           Finset.prod_nonneg fun i _ => by positivity
     _ = ∏ i ∈ range E, (1 + t ^ (2 * i + 1)) := (Finset.prod_one_add _).symm
     _ ≤ ∏ i ∈ range E, Real.exp (t ^ i) := by
-        refine Finset.prod_le_prod (fun i _ => by positivity) fun i _ => ?_
+        refine Finset.prod_le_prod₀ (fun i _ => by positivity) fun i _ => ?_
         have h2 : t ^ (2 * i + 1) ≤ t ^ i := pow_le_pow_of_le_one h0.le h1.le (by omega)
         have h3 := Real.add_one_le_exp (t ^ i)
         linarith
