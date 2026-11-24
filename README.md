@@ -21,6 +21,8 @@ Every change is in the git history after the first commit. In summary:
   `Challenge.lean`, `Solution.lean` and `comparator.json` are unchanged.
 - Continuous integration that builds the project and checks the proof with independent kernels;
   see [.github/workflows/ci.yml](.github/workflows/ci.yml).
+- A Lake cache of the project's build, fetched with `lake exe cache get`: the `cache` executable
+  and `[cache]` table in `lakefile.toml`, and `scripts/Cache.lean` and `scripts/cache-get.sh`.
 
 ### Continuous integration
 
@@ -36,6 +38,23 @@ On every push and pull request, CI:
   [con-ron](https://github.com/leanprover/con-ron). Each must accept, with exactly the five theorems
   of `comparator.json` justified by the solution and no axioms beyond the three above;
 - checks the `Solution` export with the toolchain's `nanoda_bin`.
+
+On a push to `main`, CI also publishes the build to the cache below.
+
+### Cache
+
+A full build takes about 50 CPU-minutes on top of Mathlib (11 minutes on a 4-core CI runner). To
+download a build instead:
+
+```bash
+lake exe cache get
+lake build --no-build
+```
+
+This fetches Mathlib's cache and then this project's `.olean` files, built by CI for the current
+commit (or its nearest ancestor with a published build). A full build makes Lean check every proof
+on your machine. The cache downloads files that were compiled elsewhere, so Lean does not
+re-check the proofs.
 
 ---
 

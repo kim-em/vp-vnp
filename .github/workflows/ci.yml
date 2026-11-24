@@ -6,7 +6,9 @@ name: CI
 #   con-leche  con-leche (master) --compare on lean4export files of Challenge and Solution
 #   con-ron    con-ron (master) --compare on the same export files
 #   nanoda     the nanoda_bin bundled with the toolchain, on the Solution export
-# .lake/build and the con-leche and con-ron binaries are kept in the Actions cache.
+# .lake/build and the con-leche and con-ron binaries are kept in the Actions cache. On a push to
+# main, or a manual run on main, the build outputs are published for `lake exe cache get` (see
+# the [cache] table of lakefile.toml).
 
 on:
   push:
@@ -55,8 +57,9 @@ jobs:
           "$RUNNER_TEMP/elan/elan-init" -y --no-modify-path --default-toolchain none
           echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
 
+      # This package's `cache` executable shadows Mathlib's, so name Mathlib's explicitly.
       - name: Fetch the Mathlib cache
-        run: lake exe cache get
+        run: lake exe mathlib/cache get
 
       - name: Restore the Lake build
         id: restore
@@ -66,10 +69,17 @@ jobs:
           key: ${{ steps.key.outputs.key }}
           restore-keys: lake-build-v2-
 
+      # With the artifact cache on, `-o` writes the input-to-output mappings of this package's
+      # modules, and the artifacts they name are in LAKE_CACHE_DIR, for `lake cache put` below.
       - name: lake build
+        env:
+          LAKE_CONFIG: ${{ github.workspace }}/lakefile.toml
+          LAKE_CACHE_DIR: ${{ runner.temp }}/lake-cache
+          LAKE_ARTIFACT_CACHE: "true"
+          LAKE_RESTORE_ARTIFACTS: "true"
         run: |
           set -o pipefail
-          lake build 2>&1 | tee "$RUNNER_TEMP/lake-build.log"
+          lake build -o "$RUNNER_TEMP/outputs.jsonl" 2>&1 | tee "$RUNNER_TEMP/lake-build.log"
 
       - name: Save the Lake build
         if: steps.restore.outputs.cache-hit != 'true'
@@ -197,3 +207,19 @@ jobs:
           }
           EOF
           lake env nanoda_bin "$RUNNER_TEMP/nanoda.json"
+
+      # Publish this commit's build outputs to the R2 bucket that `lake exe cache get` reads.
+      - name: Publish the build to the Lake cache
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        env:
+          LAKE_CONFIG: ${{ github.workspace }}/lakefile.toml
+          LAKE_CACHE_DIR: ${{ runner.temp }}/lake-cache
+          LAKE_ARTIFACT_CACHE: "true"
+          LAKE_RESTORE_ARTIFACTS: "true"
+          LAKE_CACHE_KEY: ${{ secrets.LAKE_CACHE_KEY }}
+        run: |
+          if [ -z "$LAKE_CACHE_KEY" ]; then
+            echo "::notice::LAKE_CACHE_KEY is not set; not publishing the build"
+            exit 0
+          fi
+          lake cache put "$RUNNER_TEMP/outputs.jsonl" --service=vp-vnp-upload

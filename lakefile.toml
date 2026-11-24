@@ -1,6 +1,8 @@
 name = "vp-vnp"
 defaultTargets = ["Statement", "Challenge", "Solution", "Paper"]
 allowNonModules = true
+# The .olean files do not depend on the platform, so one cache serves every platform.
+platformIndependent = true
 
 [leanOptions]
 autoImplicit = false
@@ -30,3 +32,28 @@ name = "Solution"
 
 [[lean_lib]]
 name = "Statement"
+
+# `lake exe cache get`: Mathlib's cache, then this project's (scripts/cache-get.sh).
+[[lean_exe]]
+name = "cache"
+root = "scripts.Cache"
+
+# Lake reads this table only from its system configuration, so scripts/cache-get.sh and CI set
+# LAKE_CONFIG to this file. "vp-vnp" is the public read endpoint; "vp-vnp-upload" is the S3 API
+# of the same R2 bucket, used by CI for `lake cache put`.
+[cache]
+defaultService = "vp-vnp"
+
+[[cache.service]]
+name = "vp-vnp"
+kind = "s3"
+artifactEndpoint = "https://vp-vnp-cache.taucetiproject.org/artifacts"
+revisionEndpoint = "https://vp-vnp-cache.taucetiproject.org/revisions"
+hasPackageScopes = false
+
+[[cache.service]]
+name = "vp-vnp-upload"
+kind = "s3"
+artifactEndpoint = "https://ec2169bdf033f56b009956d4b64ba8ef.r2.cloudflarestorage.com/vp-vnp-cache/artifacts"
+revisionEndpoint = "https://ec2169bdf033f56b009956d4b64ba8ef.r2.cloudflarestorage.com/vp-vnp-cache/revisions"
+hasPackageScopes = false
