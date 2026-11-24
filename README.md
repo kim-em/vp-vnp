@@ -22,6 +22,20 @@ Every change is in the git history after the first commit. In summary:
 - Continuous integration that builds the project and checks the proof with independent kernels;
   see [.github/workflows/ci.yml](.github/workflows/ci.yml).
 
+### Continuous integration
+
+On every push and pull request, CI:
+
+- builds the project with `lake build`, and fails on any `sorry` outside `Challenge.lean`;
+- runs `scripts/PrintAxioms.lean` and fails if any of the five theorems uses an axiom other than
+  `propext`, `Classical.choice` and `Quot.sound`;
+- exports `Challenge` and `Solution` with the toolchain's `leanexport`, and checks them with
+  `--compare` in two independent kernels,
+  [con-leche](https://github.com/leanprover/con-leche) and
+  [con-ron](https://github.com/leanprover/con-ron). Each must accept, with exactly the five theorems
+  of `comparator.json` justified by the solution and no axioms beyond the three above;
+- checks an export of `Solution` with the toolchain's `nanoda_bin`.
+
 ---
 
 # VP ≠ VNP over every field
